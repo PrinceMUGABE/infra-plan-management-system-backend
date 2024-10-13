@@ -1,0 +1,18 @@
+Rwanda Development Board (RDB) is the government department that integrates all government agencies responsible for the attraction,
+retention and facilitation of investments in the national economy.
+ Rwanda Development Board. Company type. Parastatal.
+
+So, people both natives and other form different regions when they have an idea of a particular project that
+must help Rwanda in population development includind infrastructures, healthcare, economic, political and or social affears
+they must approach RDB and convince the administration how their project will be more useful (this who do this most of the times
+ are seeking for government support manily in a financial way) so that the one succeed will be funded in order to implement it.
+
+In order this to happen the project idea's owner will start from the local leaders who are to support his/her idea and help him/her
+proceed with the super leadership positions. However, this process is exhausting because it takes a long period of processes where
+a person must run from the villager local leader, cell, sector, district, province till to the ministry level and this requires a lot of money for
+spenditures, time and sometimes some people may still project owner idea.
+
+So, I want to make the automated system where the project owner (the person who has a project idea) will go into the system and set the project⁯ idea, the location
+it must be implemented, and the system therefore track the amount of money it must take according to the infrastructures available at that particular location, the level of development,
+the population it will affect. Then the system will late projects accordingly where the most important (the project which mostly needed) will be first project to be funded (where
+the ones in charge will go to the system and and see the listed project ideas filtered from their importance)and fund them accordingly
