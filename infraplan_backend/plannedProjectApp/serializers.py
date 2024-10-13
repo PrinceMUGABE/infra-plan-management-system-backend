@@ -78,3 +78,5 @@ class PlannedProjectCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Cost must be a positive number.")
         
         return data
+    
+# progress
