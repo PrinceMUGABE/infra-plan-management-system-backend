@@ -101,7 +101,7 @@ class PlannedProjectUpdateView(APIView):
     def put(self, request, pk):
         try:
             planned_project = PlannedProject.objects.get(pk=pk)
-            
+
             # Decode the image if provided
             if 'image' in request.data:
                 image_data = request.data['image']
@@ -109,15 +109,15 @@ class PlannedProjectUpdateView(APIView):
                     image_data = base64.b64decode(image_data)
                     request.data['image'] = image_data
 
-            serializer = PlannedProjectSerializer(planned_project, data=request.data)
+            serializer = PlannedProjectSerializer(planned_project, data=request.data, partial=True)  # Enable partial updates
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         except PlannedProject.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        
-        
+     
         
 
 class PlannedProjectDeleteView(APIView):
@@ -134,18 +134,6 @@ class PlannedProjectDeleteView(APIView):
 
 
 
-
-class PlannedProjectRejectView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, pk):
-        try:
-            planned_project = PlannedProject.objects.get(pk=pk)
-            planned_project.status = 'rejected'
-            planned_project.save()
-            return Response({"detail": "Project plan rejected."}, status=status.HTTP_200_OK)
-        except PlannedProject.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class PlannedProjectByProjectView(APIView):
@@ -189,3 +177,17 @@ class PlannedProjectAcceptView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class PlannedProjectRejectView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            planned_project = PlannedProject.objects.get(pk=pk)
+            planned_project.status = 'rejected'
+            planned_project.save()
+            return Response({"detail": "Project plan rejected."}, status=status.HTTP_200_OK)
+        except PlannedProject.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

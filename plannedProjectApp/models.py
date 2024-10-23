@@ -31,10 +31,12 @@ class PlannedProject(models.Model):
     def clean(self):
         """
         Validation to ensure no duplicate project plans by the same planner for the same project.
+        This should only apply for creation, not updates.
         """
-        if PlannedProject.objects.filter(project=self.project, planned_by=self.planned_by).exists():
-            logger.warning(f"Duplicate planned project attempt by planner {self.planned_by.id} for project {self.project.id}")
-            raise ValidationError("A planner can plan a project only once.")
+        if self.pk is None:  # Only apply this check when creating a new instance
+            if PlannedProject.objects.filter(project=self.project, planned_by=self.planned_by).exists():
+                logger.warning(f"Duplicate planned project attempt by planner {self.planned_by.id} for project {self.project.id}")
+                raise ValidationError("A planner can plan a project only once.")
         
     def save(self, *args, **kwargs):
         try:

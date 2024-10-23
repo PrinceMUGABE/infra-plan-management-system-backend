@@ -26,7 +26,7 @@ class PlannerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Planner
-        fields = ['created_by', 'address', 'no_experience']
+        fields = ['created_by', 'address', 'no_experience', 'email']
 
 
 
@@ -64,15 +64,14 @@ class PlannedProjectSerializer(serializers.ModelSerializer):
             'cost': {'required': True},
             'location': {'required': True},
         }
-    
+
     def validate(self, data):
         """
         Perform custom validation for the fields
         """
-        if data['duration'] <= 0:
+        if 'duration' in data and data['duration'] <= 0:
             raise serializers.ValidationError("Duration must be a positive integer.")
-        if data['cost'] <= 0:
+        if 'cost' in data and data['cost'] <= 0:
             raise serializers.ValidationError("Cost must be a positive number.")
         
         return data
-
