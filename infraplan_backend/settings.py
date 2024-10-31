@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'stakeholderApp',
     'plannedProjectApp',
     'funded_project_app',
+    'engineerApplicationApp',
 ]
 
 MIDDLEWARE = [

@@ -66,12 +66,21 @@ def create_funded_project(request):
         error_message = "Project not found or has not been accepted in Planned Projects"
         logger.error(error_message)
         return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if FundedProject.objects.filter(funded_project=planned_project, status='accepted'):
+        error_message = "This project has been funded"
+        logger.error(error_message)
+        return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+    
 
     # 4. Uniqueness Check: Ensure the user has not already funded this project
     if FundedProject.objects.filter(created_by=stakeholder, funded_project=planned_project).exists():
         error_message = "You have already funded this project"
         logger.error(error_message)
         return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
 
     # If all checks pass, create the FundedProject record
     funded_project = FundedProject(created_by=stakeholder, funded_project=planned_project, status='pending')
