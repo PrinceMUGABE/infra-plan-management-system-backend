@@ -8,7 +8,9 @@ class Project(models.Model):
     STATUS_CHOICES = [
         ('un_planned', 'Un Planned'),
         ('planned', 'Planned'),
+        ('funded', 'Funded'),
         ('in_progress', 'In Progress'),
+        
         ('completed', 'Completed'),
     ]
 

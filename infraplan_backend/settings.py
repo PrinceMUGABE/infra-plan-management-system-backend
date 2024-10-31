@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'engineerApp',
     'stakeholderApp',
     'plannedProjectApp',
+    'funded_project_app',
 ]
 
 MIDDLEWARE = [
@@ -37,24 +38,33 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',  # Comment out or remove this line
+    # 'django.middleware.csrf.CsrfViewMiddleware',  # Comment out or remove this line if you want to disable CSRF
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',  # Ensure this is included
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
     "http://127.0.0.1:5500",
+    "http://127.0.0.1:8000",
 ]
 
-# Add these settings to disable CSRF
+CORS_ALLOW_CREDENTIALS = True  # Allow credentials like cookies and auth headers
+
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'DELETE',
+    'OPTIONS',
+]
+
+# CSRF settings
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5500'] 
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5500']
 
 ROOT_URLCONF = 'infraplan_backend.urls'
 
@@ -80,9 +90,9 @@ WSGI_APPLICATION = 'infraplan_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'infraplan_db',  # Your database name
-        'USER': 'root',  # Your MySQL user
-        'PASSWORD': '',  # Your MySQL password
+        'NAME': 'infraplan_db',
+        'USER': 'root',
+        'PASSWORD': '',  # Make sure to set your password
         'HOST': 'localhost',
         'PORT': '3306',
     }
@@ -113,23 +123,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser'
-    ],
-}
 # Django REST Framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -145,7 +145,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
 # JWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=3),
@@ -153,30 +152,21 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,  # Make sure to keep this secret!
+    'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 # Email configuration for sending welcome messages
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # e.g., smtp.gmail.com for Gmail
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'princemugabe567@gmail.com'  # Your email address
-EMAIL_HOST_PASSWORD = 'dpyj mshj qhef cyml'  # Your email password
-
-# When a user is created, a welcome message will be sent to their email
-
+EMAIL_HOST_USER = 'princemugabe567@gmail.com'
+EMAIL_HOST_PASSWORD = 'dpyj mshj qhef cyml'
 
 AUTHENTICATION_BACKENDS = [
     'userApp.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-AUTH_USER_MODEL = 'userApp.User'  # Use your app name and custom user model name
-
-
-# settings.py
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+AUTH_USER_MODEL = 'userApp.User'
