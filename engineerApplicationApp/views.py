@@ -10,20 +10,58 @@ from funded_project_app.models import FundedProject
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_application(request):
-    engineer = Engineer.objects.get(created_by=request.user)
-    project_id = request.data.get('project_id')
-    
     try:
+        engineer = Engineer.objects.get(created_by=request.user)
+        project_id = request.data.get('project_id')
+        
+        # Fetch the funded project
         project = FundedProject.objects.get(id=project_id)
+        
+        # Check if the funded project is accepted
+        if project.status != 'accepted':
+            return Response(
+                {"error": "Only accepted projects can receive applications."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if the engineer has already applied for this project
+        existing_application = EngineerApplication.objects.filter(created_by=engineer, project=project).first()
+        if existing_application:
+            return Response(
+                {"error": "You have already applied for this project."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if the project already has an accepted application
+        if EngineerApplication.objects.filter(project=project, status='accepted').exists():
+            return Response(
+                {"error": "This project has already accepted an application. No further applications are allowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create a new application if all checks pass
         application = EngineerApplication(created_by=engineer, project=project)
         application.save()
+        
+        # Serialize and log the application data
         serializer = EngineerApplicationSerializer(application)
         print(serializer.data)  # Log output for the terminal
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    except Engineer.DoesNotExist:
+        return Response({"error": "Engineer profile not found for this user."}, status=status.HTTP_404_NOT_FOUND)
     except FundedProject.DoesNotExist:
         return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+    
+    
+    
+       
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -80,7 +118,7 @@ def delete_application(request, application_id):
     except EngineerApplication.DoesNotExist:
         return Response({"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def accept_application(request, application_id):
     try:
@@ -93,7 +131,7 @@ def accept_application(request, application_id):
     except EngineerApplication.DoesNotExist:
         return Response({"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
+@api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def reject_application(request, application_id):
     try:

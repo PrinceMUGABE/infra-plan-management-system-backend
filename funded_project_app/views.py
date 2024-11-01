@@ -193,3 +193,56 @@ def get_user_funded_projects(request):
             {"error": "You must be a registered stakeholder to view your funded projects."},
             status=status.HTTP_403_FORBIDDEN
         )
+        
+        
+        
+        
+        
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def accept_funded_project(request, pk):
+    try:
+        funded_project = FundedProject.objects.get(pk=pk)
+        
+        # Check if the requesting user is an admin
+        if request.user.role != 'admin':
+            return Response({"error": "Only admins can accept funded projects"}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Change the status to 'accepted'
+        funded_project.status = 'accepted'
+        funded_project.save()
+
+        # Update the associated Project's status to 'funded'
+        project = funded_project.funded_project.project
+        project.status = 'funded'
+        project.save()
+
+        # Serialize the updated funded project
+        serializer = FundedProjectSerializer(funded_project)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except FundedProject.DoesNotExist:
+        return Response({"error": "Funded project not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def reject_funded_project(request, pk):
+    try:
+        funded_project = FundedProject.objects.get(pk=pk)
+        
+        # Check if the requesting user is an admin
+        if request.user.role != 'admin':
+            return Response({"error": "Only admins can reject funded projects"}, status=status.HTTP_403_FORBIDDEN)
+        
+        # Change the status to 'rejected'
+        funded_project.status = 'rejected'
+        funded_project.save()
+
+        # Serialize the updated funded project
+        serializer = FundedProjectSerializer(funded_project)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    except FundedProject.DoesNotExist:
+        return Response({"error": "Funded project not found"}, status=status.HTTP_404_NOT_FOUND)
