@@ -6,7 +6,9 @@ from django.shortcuts import get_object_or_404
 from .models import Stakeholder
 from .serializers import StakeholderSerializer
 from rest_framework.exceptions import ValidationError
+import logging
 
+logger = logging.getLogger(__name__)
 # Create a Stakeholder
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,25 +17,48 @@ class StakeholderCreateView(generics.CreateAPIView):
     serializer_class = StakeholderSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        # Check if the user already has a stakeholder
-        if Stakeholder.objects.filter(created_by=self.request.user).exists():
-            raise ValidationError({"detail": "You have already created a stakeholder account."})
-
-        # If no existing stakeholder, proceed with the creation
-        serializer.save(created_by=self.request.user)
-
     def create(self, request, *args, **kwargs):
-        try:
-            return super().create(request, *args, **kwargs)
-        except ValidationError as e:
-            if isinstance(e.detail, dict) and 'detail' in e.detail:
-                # Specific error message (e.g., user already has a stakeholder account)
-                return Response({'error': e.detail['detail']}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                # General error handling
-                return Response({'error': 'An error occurred while creating the stakeholder account.'}, status=status.HTTP_400_BAD_REQUEST)
+        # Extract data from request
+        email = request.data.get('email')
+        address = request.data.get('address')
+        monthly_income = request.data.get('monthly_income')
 
+        # Initialize an empty list to collect error messages
+        error_messages = []
+
+        # Check if the user already has a stakeholder
+        if Stakeholder.objects.filter(created_by=request.user).exists():
+            error_msg = "You have already created a stakeholder account."
+            logger.error(error_msg)
+            error_messages.append(error_msg)
+
+        # Validate the email
+        if Stakeholder.objects.filter(email=email).exists():
+            error_msg = "A stakeholder with this email already exists."
+            logger.error(error_msg)
+            error_messages.append(error_msg)
+
+        # Validate the monthly income
+        if monthly_income is not None and (float(monthly_income) <= 0):
+            error_msg = "Monthly income must be a positive value."
+            logger.error(error_msg)
+            error_messages.append(error_msg)
+
+        # If there are any error messages, raise a ValidationError
+        if error_messages:
+            raise ValidationError({"detail": error_messages})
+
+        # If no errors, proceed to create the stakeholder
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=request.user)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+    
+    
+    
 
 # Get Stakeholder by ID, Update, Delete
 class StakeholderDetailView(generics.RetrieveAPIView):

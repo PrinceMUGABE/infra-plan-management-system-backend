@@ -82,14 +82,28 @@ def get_all_applications(request):
     print(serializer.data)  # Log output for the terminal
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_applications_for_engineer(request):
-    engineer = Engineer.objects.get(created_by=request.user)
+    try:
+        # Attempt to retrieve the Engineer associated with the current user
+        engineer = Engineer.objects.get(created_by=request.user)
+    except Engineer.DoesNotExist:
+        # Return a 404 response if the Engineer does not exist
+        print("\n\n Engineer not found.\n\n")
+        return Response({"detail": "Engineer not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # If the engineer is found, retrieve the associated applications
     applications = EngineerApplication.objects.filter(created_by=engineer)
     serializer = EngineerApplicationSerializer(applications, many=True)
+
     print(serializer.data)  # Log output for the terminal
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])

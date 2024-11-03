@@ -7,6 +7,14 @@ from django.core.exceptions import ValidationError
 from docx import Document
 
 
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Project
+from .serializers import ProjectSerializer
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError, transaction
+
 # Create a new project
 class ProjectCreateView(generics.CreateAPIView):
     queryset = Project.objects.all()
@@ -15,6 +23,36 @@ class ProjectCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        # Validate the serializer
+        if not serializer.is_valid():
+            # Log and return validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Save the project within a transaction to handle integrity issues
+            with transaction.atomic():
+                self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        except IntegrityError as e:
+            # Catch integrity errors, e.g., unique constraints
+            return Response({"error": "A project with this field already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except ValidationError as e:
+            # Handle any validation errors that may arise
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            # Handle any unexpected exceptions
+            return Response({"detail": "An unexpected error occurred."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
 
 
 # List all projects
@@ -117,3 +155,18 @@ class ProjectUpdateView(generics.UpdateAPIView):
             return Response(serializer.data)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        
+        
+        
+        
+        
+# List all projects created by the authenticated user
+class UserProjectListView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Return projects filtered by the authenticated user
+        return Project.objects.filter(created_by=self.request.user)

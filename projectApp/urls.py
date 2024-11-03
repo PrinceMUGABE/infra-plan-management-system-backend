@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     ProjectCreateView, ProjectListView, ProjectDetailView, 
     ProjectUploadView, ProjectByStatusView, ProjectByFieldView, 
-    ProjectDeleteView, ProjectUpdateView
+    ProjectDeleteView, ProjectUpdateView,
+    UserProjectListView
 )
 
 urlpatterns = [
@@ -13,5 +14,6 @@ urlpatterns = [
     path('status/', ProjectByStatusView.as_view(), name='project-by-status'),
     path('field/', ProjectByFieldView.as_view(), name='project-by-field'),
     path('delete/<int:pk>/', ProjectDeleteView.as_view(), name='project-delete'),
-    path('update/<int:pk>/', ProjectUpdateView.as_view(), name='project-update'),  # New URL for project updating
+    path('update/<int:pk>/', ProjectUpdateView.as_view(), name='project-update'),
+    path('my-projects/', UserProjectListView.as_view(), name='user-projects'),
 ]
