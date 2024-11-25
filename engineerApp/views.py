@@ -6,6 +6,10 @@ from .serializers import EngineerSerializer
 from .models import Engineer
 from django.db import IntegrityError
 import logging
+from django.core.mail import send_mail
+from django.conf import settings
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +31,17 @@ class CreateEngineerView(APIView):
         if serializer.is_valid():
             try:
                 # Save the engineer with the authenticated user as the creator
-                serializer.save(created_by=request.user)
+                engineer = serializer.save(created_by=request.user)
+
+                # Send email notification
+                send_mail(
+                    subject="Account Created Successfully",
+                    message=f"Dear Engineer,\n\nYour account has been successfully created with the following details:\n\nEmail: {engineer.email}\nAddress: {engineer.address}\n\nThank you for joining our platform!",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[engineer.email],
+                    fail_silently=False,
+                )
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except IntegrityError:
                 logger.error(f"IntegrityError: {serializer.errors}")
@@ -37,7 +51,9 @@ class CreateEngineerView(APIView):
                 )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+    
+    
+    
 
 
 class ListEngineerView(APIView):
@@ -90,6 +106,17 @@ class UpdateEngineerView(APIView):
             serializer = EngineerSerializer(engineer, data=request.data, partial=False)
             if serializer.is_valid():
                 serializer.save()
+                
+                # Send email notification
+                send_mail(
+                    subject="Account Updated Successfully",
+                    message=f"Dear Engineer,\n\nYour account has been successfully updated at Infraplan Management System.\n If you did not make the activity contact your manage as fast as you can.\n\nThank you for joining our platform!",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[engineer.email],
+                    fail_silently=False,
+                )
+
+
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Engineer.DoesNotExist:

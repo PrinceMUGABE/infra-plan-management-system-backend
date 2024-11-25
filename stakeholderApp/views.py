@@ -7,6 +7,8 @@ from .models import Stakeholder
 from .serializers import StakeholderSerializer
 from rest_framework.exceptions import ValidationError
 import logging
+from django.core.mail import send_mail
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 # Create a Stakeholder
@@ -51,7 +53,17 @@ class StakeholderCreateView(generics.CreateAPIView):
         # If no errors, proceed to create the stakeholder
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(created_by=request.user)
+        stakeholder = serializer.save(created_by=request.user)
+        
+        # Send email notification
+        send_mail(
+                    subject="Account Created Successfully",
+                    message=f"Dear Engineer,\n\nYour account has been successfully created at Infraplan Management System.\n\nThank you for joining our platform!",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[stakeholder.email],
+                    fail_silently=False,
+                )
+
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     

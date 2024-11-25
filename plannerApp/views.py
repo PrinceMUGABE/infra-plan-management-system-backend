@@ -5,6 +5,8 @@ from .models import Planner
 from .serializers import PlannerSerializer
 from django.db import IntegrityError
 import logging
+from django.core.mail import send_mail
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,18 @@ class PlannerCreateView(generics.CreateAPIView):
 
         try:
             # Save the planner with the authenticated user as the creator
-            serializer.save(created_by=self.request.user)
+            planner = serializer.save(created_by=self.request.user)
+            
+            # Send email notification
+            send_mail(
+                    subject="Account Created Successfully",
+                    message=f"Dear Engineer,\n\nYour account has been successfully created at Infraplan Management System.\n\nThank you for joining our platform!",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[planner.email],
+                    fail_silently=False,
+                )
+
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         except IntegrityError as e:
@@ -54,12 +67,20 @@ class PlannerListView(generics.ListAPIView):
     queryset = Planner.objects.all()
     serializer_class = PlannerSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    
+    
+    
+    
 
 # View planner by ID
 class PlannerDetailView(generics.RetrieveAPIView):
     queryset = Planner.objects.all()
     serializer_class = PlannerSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    
+    
 
 # View planner by email
 class PlannerByEmailView(generics.RetrieveAPIView):
@@ -69,12 +90,16 @@ class PlannerByEmailView(generics.RetrieveAPIView):
     def get_object(self):
         email = self.kwargs['email']
         return generics.get_object_or_404(Planner, email=email)
+    
+    
+    
 
 # Edit planner by ID
 class PlannerUpdateView(generics.UpdateAPIView):
     queryset = Planner.objects.all()
     serializer_class = PlannerSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
 # Delete planner by ID
 class PlannerDeleteView(generics.DestroyAPIView):

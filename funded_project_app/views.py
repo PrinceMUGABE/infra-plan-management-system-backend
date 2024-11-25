@@ -206,8 +206,8 @@ def accept_funded_project(request, pk):
         funded_project = FundedProject.objects.get(pk=pk)
         
         # Check if the requesting user is an admin
-        if request.user.role != 'admin':
-            return Response({"error": "Only admins can accept funded projects"}, status=status.HTTP_403_FORBIDDEN)
+        # if request.user.role != 'admin':
+        #     return Response({"error": "Only admins can accept funded projects"}, status=status.HTTP_403_FORBIDDEN)
         
         # Change the status to 'accepted'
         funded_project.status = 'accepted'
